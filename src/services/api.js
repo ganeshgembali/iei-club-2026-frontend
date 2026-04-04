@@ -1,11 +1,8 @@
 import axios from 'axios';
 
-if (typeof window !== 'undefined') {
-  window.alert(`DIAGNOSTIC VERSION: 10 - API URL: http://127.0.0.1:5000/api`);
-}
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:5000/api', // Force direct local connection for debugging
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5000/api',
   headers: {
     'Content-Type': 'application/json',
   },

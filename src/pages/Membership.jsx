@@ -1,6 +1,6 @@
- import React, { useState } from 'react';
+ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { FileText, ShieldCheck, Mail, User, BookOpen, AlertCircle, Loader2, CheckCircle } from 'lucide-react';
+import { FileText, ShieldCheck, Mail, User, BookOpen, AlertCircle, Loader2, CheckCircle, Clock, ArrowRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../services/api';
 
@@ -15,6 +15,28 @@ const Membership = () => {
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [membershipStatus, setMembershipStatus] = useState(null);
+  const [fetchingStatus, setFetchingStatus] = useState(true);
+
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  const fetchStatus = async () => {
+    try {
+      setFetchingStatus(true);
+      const response = await api.get('/memberships/my');
+      if (response.data) {
+        setMembershipStatus(response.data.status);
+      } else {
+        setMembershipStatus(null);
+      }
+    } catch (error) {
+      console.error('Error fetching membership status:', error);
+    } finally {
+      setFetchingStatus(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,6 +48,7 @@ const Membership = () => {
     try {
       await api.post('/memberships', formData);
       setSubmitted(true);
+      fetchStatus(); // Refresh status after submission
       toast.success('Membership application submitted successfully!');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Submission failed');
@@ -34,18 +57,81 @@ const Membership = () => {
     }
   };
 
-  if (submitted) {
+  if (fetchingStatus) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 space-y-4">
+        <Loader2 className="animate-spin text-primary" size={48} />
+        <p className="text-slate-500 font-bold">Loading your membership status...</p>
+      </div>
+    );
+  }
+
+  if (membershipStatus === 'PENDING' || submitted) {
     return (
       <div className="max-w-2xl mx-auto py-20 text-center animate-in fade-in zoom-in duration-500">
-        <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg">
-          <CheckCircle size={48} />
+        <div className="w-24 h-24 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg">
+          <Clock size={48} className="animate-pulse" />
         </div>
-        <h1 className="text-4xl font-extrabold text-primary mb-4">Application Received!</h1>
-        <p className="text-slate-600 mb-10 text-lg">
-          Your IEI membership application has been submitted and is currently under review by the committee. You'll be notified via email once it's processed.
+        <h1 className="text-4xl font-extrabold text-primary mb-4">Application Under Review</h1>
+        <p className="text-slate-600 mb-10 text-lg font-medium">
+          Your IEI membership application has been received and is currently being processed by the committee. We appreciate your patience!
         </p>
-        <button onClick={() => setSubmitted(false)} className="bg-primary text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:bg-primary-light transition-all">
-          View Status in Dashboard
+        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 inline-block">
+          <p className="text-sm text-slate-500 font-bold">Estimated review time: 3-5 business days</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (membershipStatus === 'APPROVED') {
+    return (
+      <div className="max-w-3xl mx-auto py-12">
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-[40px] p-12 text-white text-center shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+          <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-8 backdrop-blur-md">
+            <CheckCircle size={56} />
+          </div>
+          <h1 className="text-5xl font-black mb-6">Welcome to IEI!</h1>
+          <p className="text-xl font-bold opacity-90 max-w-xl mx-auto mb-10 leading-relaxed">
+            Congratulations! Your membership application has been accepted. You are now a recognized member of the Institution of Engineers (India).
+          </p>
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 inline-block text-left">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white text-green-600 rounded-xl flex items-center justify-center font-black text-xl">
+                 {user?.name?.charAt(0)}
+              </div>
+              <div>
+                <p className="text-sm font-black opacity-70 uppercase tracking-widest">Active Member</p>
+                <p className="text-lg font-black">{user?.name}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleReapply = () => {
+    setMembershipStatus(null);
+    setSubmitted(false);
+  };
+
+  if (membershipStatus === 'REJECTED') {
+    return (
+      <div className="max-w-2xl mx-auto py-20 text-center animate-in fade-in zoom-in duration-500">
+        <div className="w-24 h-24 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg">
+          <AlertCircle size={48} />
+        </div>
+        <h1 className="text-4xl font-extrabold text-primary mb-4">Application Rejected</h1>
+        <p className="text-slate-600 mb-10 text-lg font-medium">
+          Unfortunately, your membership application was not approved at this time. This could be due to incomplete documentation or incorrect details.
+        </p>
+        <button 
+          onClick={handleReapply}
+          className="bg-primary text-white px-10 py-5 rounded-[22px] font-black shadow-xl shadow-primary/20 hover:bg-primary-light transition-all flex items-center mx-auto space-x-3"
+        >
+          <span>Re-apply Now</span>
+          <ArrowRight size={20} />
         </button>
       </div>
     );

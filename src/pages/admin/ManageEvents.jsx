@@ -52,11 +52,11 @@ const ManageEvents = () => {
         setSubmitting(true);
         try {
             if (currentEvent._id) {
-                console.log(`Submitting PUT to: http://127.0.0.1:5000/api/events/${currentEvent._id}`);
+                console.log(`Submitting PUT to event ${currentEvent._id}`);
                 await api.put(`/events/${currentEvent._id}`, currentEvent);
                 toast.success('Event updated successfully');
             } else {
-                console.log(`Submitting POST to: http://127.0.0.1:5000/api/events`);
+                console.log(`Submitting POST to events`);
                 await api.post('/events', currentEvent);
                 toast.success('Event created successfully');
             }
@@ -73,7 +73,7 @@ const ManageEvents = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this event?')) {
             try {
-                console.log(`Submitting DELETE to: http://127.0.0.1:5000/api/events/${id}`);
+                console.log(`Submitting DELETE to event ${id}`);
                 await api.delete(`/events/${id}`);
                 setEvents(events.filter(e => e._id !== id));
                 toast.success('Event deleted');
