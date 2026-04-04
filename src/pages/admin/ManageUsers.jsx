@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, UserCog, Shield, ShieldAlert, CheckCircle, XCircle, MoreVertical, Loader2 } from 'lucide-react';
+import { Search, User, UserCog, Shield, ShieldAlert, CheckCircle, XCircle, MoreVertical, Loader2 } from 'lucide-react';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 
@@ -18,12 +18,8 @@ const ManageUsers = () => {
             setUsers(response.data);
         } catch (error) {
             console.error('Error fetching users:', error);
-            // Dummy
-            setUsers([
-                { _id: '1', name: 'Rahul Sharma', email: 'rahul@univ.edu', role: 'STUDENT', department: 'CSE' },
-                { _id: '2', name: 'Dr. S. Mukherjee', email: 'sm@univ.edu', role: 'ADMIN', department: 'ECE' },
-                { _id: '3', name: 'Amit Kumar', email: 'amit@univ.edu', role: 'COMMITTEE', department: 'ME' },
-            ]);
+            toast.error('Failed to load user directory');
+            setUsers([]);
         } finally {
             setLoading(false);
         }
@@ -102,12 +98,9 @@ const ManageUsers = () => {
                                     </td>
                                     <td className="px-8 py-6">
                                         <div className="flex items-center space-x-2">
-                                            {u.role === 'ADMIN' ? <ShieldAlert size={16} className="text-red-500" /> : 
-                                             u.role === 'COMMITTEE' ? <Shield size={16} className="text-blue-500" /> : 
-                                             <CheckCircle size={16} className="text-green-500" />}
-                                            <span className={`text-[10px] font-black uppercase tracking-tighter ${
-                                                u.role === 'ADMIN' ? 'text-red-600' : 
-                                                u.role === 'COMMITTEE' ? 'text-blue-600' : 'text-green-600'
+                                            {u.role === 'ADMIN' ? <ShieldAlert size={16} className="text-red-500" /> : <User size={16} className="text-green-500" />}
+                                            <span className={`text-[10px] font-black uppercase tracking-tighter px-2 py-1 rounded-md ${
+                                                u.role === 'ADMIN' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'
                                             }`}>
                                                 {u.role}
                                             </span>
@@ -121,7 +114,6 @@ const ManageUsers = () => {
                                               onChange={(e) => updateRole(u._id, e.target.value)}
                                             >
                                                 <option value="STUDENT">Student</option>
-                                                <option value="COMMITTEE">Committee</option>
                                                 <option value="ADMIN">Admin</option>
                                             </select>
                                             <button className="p-2 text-slate-300 hover:text-red-500 transition-colors">

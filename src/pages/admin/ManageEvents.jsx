@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 const ManageEvents = () => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [currentEvent, setCurrentEvent] = useState({
         title: '',
@@ -13,7 +14,9 @@ const ManageEvents = () => {
         venue: '',
         category: 'WORKSHOP',
         description: '',
-        capacity: 100
+        capacity: 100,
+        image: '',
+        registrationLink: ''
     });
 
     useEffect(() => {
@@ -22,45 +25,61 @@ const ManageEvents = () => {
 
     const fetchEvents = async () => {
         try {
-            const response = await api.get('/events');
+            const response = await api.get(`/events?_t=${Date.now()}`);
             setEvents(response.data);
         } catch (error) {
             console.error('Error fetching events:', error);
-            // Dummy for demo
-            setEvents([
-                { _id: '1', title: 'National Level Symposium', date: '2026-05-15', venue: 'Auditorium', registrations: 45, status: 'OPEN' },
-                { _id: '2', title: 'Python for Engineers', date: '2026-04-10', venue: 'Lab 1', registrations: 30, status: 'CLOSED' },
-            ]);
+            toast.error('Failed to load events');
+            setEvents([]);
         } finally {
             setLoading(false);
         }
     };
 
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setCurrentEvent({...currentEvent, image: reader.result});
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(true);
         try {
             if (currentEvent._id) {
+                console.log(`Submitting PUT to: http://127.0.0.1:5000/api/events/${currentEvent._id}`);
                 await api.put(`/events/${currentEvent._id}`, currentEvent);
                 toast.success('Event updated successfully');
             } else {
+                console.log(`Submitting POST to: http://127.0.0.1:5000/api/events`);
                 await api.post('/events', currentEvent);
                 toast.success('Event created successfully');
             }
             setShowModal(false);
             fetchEvents();
         } catch (error) {
-            toast.error('Operation failed');
+            console.error('Submit error:', error);
+            toast.error(error.response?.data?.message || 'Operation failed');
+        } finally {
+            setSubmitting(false);
         }
     };
 
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this event?')) {
             try {
+                console.log(`Submitting DELETE to: http://127.0.0.1:5000/api/events/${id}`);
                 await api.delete(`/events/${id}`);
                 setEvents(events.filter(e => e._id !== id));
                 toast.success('Event deleted');
             } catch (error) {
-                toast.error('Deletion failed');
+                console.error('Delete error:', error);
+                toast.error(error.response?.data?.message || 'Deletion failed');
             }
         }
     };
@@ -73,7 +92,7 @@ const ManageEvents = () => {
                    <p className="text-slate-500 font-semibold text-sm">Create and organize chapter events</p>
                 </div>
                 <button 
-                  onClick={() => { setCurrentEvent({ title: '', date: '', venue: '', category: 'WORKSHOP', description: '', capacity: 100 }); setShowModal(true); }}
+                  onClick={() => { setCurrentEvent({ title: '', date: '', venue: '', category: 'WORKSHOP', description: '', capacity: 100, image: '', registrationLink: '' }); setShowModal(true); }}
                   className="bg-primary text-white px-8 py-4 rounded-2xl font-black flex items-center shadow-xl shadow-primary/20 hover:bg-primary-light transition-all"
                 >
                     <Plus size={20} className="mr-2" />
@@ -132,7 +151,7 @@ const ManageEvents = () => {
                                         </span>
                                     </td>
                                     <td className="px-8 py-6 text-right">
-                                        <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex justify-end space-x-2 transition-opacity">
                                             <button 
                                               onClick={() => { setCurrentEvent(event); setShowModal(true); }}
                                               className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
@@ -199,7 +218,7 @@ const ManageEvents = () => {
                                     />
                                 </div>
                                 <div className="md:col-span-2">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 block mb-2">Description</label>
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 block mb-2">Event Description</label>
                                     <textarea 
                                         rows="4" 
                                         required
@@ -208,10 +227,41 @@ const ManageEvents = () => {
                                         onChange={(e) => setCurrentEvent({...currentEvent, description: e.target.value})}
                                     ></textarea>
                                 </div>
+                                <div className="md:col-span-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 block mb-2">Registration Redirect Link (Optional)</label>
+                                    <input 
+                                        type="url" 
+                                        placeholder="https://..."
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all font-bold text-slate-700"
+                                        value={currentEvent.registrationLink || ''}
+                                        onChange={(e) => setCurrentEvent({...currentEvent, registrationLink: e.target.value})}
+                                    />
+                                    <p className="text-[10px] text-slate-400 mt-1 ml-1 font-bold">If not provided, VIT-AP registration portal will be used by default.</p>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 block mb-2">Event Banner Photo</label>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*"
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all font-bold text-slate-700"
+                                        onChange={handleImageUpload}
+                                    />
+                                    {currentEvent.image && (
+                                       <img src={currentEvent.image} alt="Preview" className="mx-auto h-32 rounded-xl object-cover shadow-sm mt-4" />
+                                    )}
+                                </div>
                              </div>
                              <div className="pt-4">
-                                <button className="w-full bg-primary text-white py-5 rounded-[22px] font-black text-lg shadow-xl shadow-primary/20 hover:bg-primary-light transition-all">
-                                    {currentEvent._id ? 'Update Information' : 'Publish Event'}
+                                <button 
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="w-full bg-primary text-white py-5 rounded-[22px] font-black text-lg shadow-xl shadow-primary/20 hover:bg-primary-light transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {submitting ? (
+                                        <><Loader2 className="animate-spin mr-2" size={24} /> Processing...</>
+                                    ) : (
+                                        currentEvent._id ? 'Update Information' : 'Publish Event'
+                                    )}
                                 </button>
                              </div>
                         </form>

@@ -19,13 +19,6 @@ const AdminDashboard = () => {
         setStats(response.data);
       } catch (error) {
         console.error('Error fetching admin stats:', error);
-        // Fallback dummy
-        setStats({
-          totalUsers: 450,
-          totalEvents: 12,
-          pendingMemberships: 8,
-          recentRegistrations: 25
-        });
       } finally {
         setLoading(false);
       }
@@ -113,14 +106,9 @@ const AdminDashboard = () => {
                           <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest text-right">Time</th>
                        </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-50">
-                       {[
-                         { user: 'Rahul Sharma', action: 'Event Registration', status: 'SUCCESS', time: '5m ago' },
-                         { user: 'Anita Paul', action: 'Membership Application', status: 'PENDING', time: '12m ago' },
-                         { user: 'Siddharth M.', action: 'Profile Update', status: 'SUCCESS', time: '45m ago' },
-                         { user: 'Vikram Singh', action: 'Event Creation', status: 'ADMIN', time: '1h ago' },
-                         { user: 'Priya Verma', action: 'Feedback Submission', status: 'SUCCESS', time: '2h ago' },
-                       ].map((row, i) => (
+                     <tbody className="divide-y divide-slate-50">
+                       {stats.recentActivity && stats.recentActivity.length > 0 ? (
+                         stats.recentActivity.map((row, i) => (
                           <tr key={i} className="hover:bg-slate-50/50 transition-colors">
                              <td className="px-8 py-5">
                                 <div className="font-bold text-slate-700 text-sm">{row.user}</div>
@@ -140,7 +128,12 @@ const AdminDashboard = () => {
                                 {row.time}
                              </td>
                           </tr>
-                       ))}
+                         ))
+                       ) : (
+                          <tr>
+                             <td colSpan="4" className="px-8 py-8 text-center text-slate-400 font-medium">No recent activity detected.</td>
+                          </tr>
+                       )}
                     </tbody>
                  </table>
               </div>

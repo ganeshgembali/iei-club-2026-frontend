@@ -11,7 +11,7 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Membership from './pages/Membership';
-import DiscussionRoom from './pages/DiscussionRoom';
+
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageEvents from './pages/admin/ManageEvents';
 import ManageUsers from './pages/admin/ManageUsers';
@@ -36,7 +36,7 @@ function App() {
           </div>
         )}
         
-        <main className={`flex-grow container mx-auto px-4 py-8 ${isAdminRoute ? 'max-w-7xl' : ''}`}>
+        <main className={`flex-grow container mx-auto px-4 py-4 md:py-8 ${isAdminRoute ? 'max-w-7xl' : ''}`}>
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
@@ -62,20 +62,16 @@ function App() {
                 <Membership />
               </ProtectedRoute>
             } />
-            <Route path="/discussion" element={
-              <ProtectedRoute>
-                <DiscussionRoom />
-              </ProtectedRoute>
-            } />
+
 
             {/* Admin/Committee Protected Routes */}
             <Route path="/admin" element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'COMMITTEE']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AdminDashboard />
               </ProtectedRoute>
             } />
             <Route path="/admin/events" element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'COMMITTEE']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <ManageEvents />
               </ProtectedRoute>
             } />
@@ -85,17 +81,17 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="/admin/memberships" element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'COMMITTEE']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <MembershipRequests />
               </ProtectedRoute>
             } />
             <Route path="/admin/announcements" element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'COMMITTEE']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AnnouncementsManagement />
               </ProtectedRoute>
             } />
             <Route path="/admin/feedback" element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'COMMITTEE']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <FeedbackViewer />
               </ProtectedRoute>
             } />

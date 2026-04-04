@@ -13,15 +13,13 @@ const MembershipRequests = () => {
 
     const fetchRequests = async () => {
         try {
-            const response = await api.get('/admin/memberships');
-            setRequests(response.data);
+            const response = await api.get('/memberships');
+            // Only show PENDING requests on this management page
+            setRequests(response.data.filter(r => r.status === 'PENDING'));
         } catch (error) {
             console.error('Error fetching membership requests:', error);
-            // Dummy
-            setRequests([
-                { _id: '1', name: 'Rahul Sharma', email: 'rahul@univ.edu', collegeId: 'CS21004', phone: '9876543210', date: '2026-03-15', status: 'PENDING' },
-                { _id: '2', name: 'Anita Paul', email: 'anita@univ.edu', collegeId: 'EC21056', phone: '8765432109', date: '2026-03-18', status: 'PENDING' },
-            ]);
+            toast.error('Failed to load membership requests');
+            setRequests([]);
         } finally {
             setLoading(false);
         }
@@ -29,7 +27,7 @@ const MembershipRequests = () => {
 
     const handleAction = async (id, action) => {
         try {
-            await api.put(`/admin/memberships/${id}`, { status: action }); // APPROVED or REJECTED
+            await api.put(`/memberships/${id}`, { status: action }); // APPROVED or REJECTED
             toast.success(`Application ${action.toLowerCase()}`);
             setRequests(requests.filter(r => r._id !== id));
         } catch (error) {
@@ -58,15 +56,15 @@ const MembershipRequests = () => {
                         <div key={req._id} className="bg-white rounded-[32px] p-8 shadow-md border border-slate-100 hover:shadow-xl transition-all group">
                             <div className="flex justify-between items-start mb-8">
                                 <div className="flex items-center space-x-4">
-                                    <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center font-black text-slate-400 text-xl group-hover:bg-primary group-hover:text-white transition-all">
-                                        {req.name.charAt(0)}
+                                    <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center font-black text-slate-400 text-xl group-hover:bg-primary group-hover:text-white transition-all text-uppercase">
+                                        {(req.user?.name || 'U').charAt(0)}
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-slate-700 text-lg">{req.name}</h3>
-                                        <div className="text-xs text-slate-400 font-bold">{req.email}</div>
+                                        <h3 className="font-black text-slate-700 text-lg">{req.user?.name || 'Unknown User'}</h3>
+                                        <div className="text-xs text-slate-400 font-bold">{req.user?.email || 'No email provided'}</div>
                                     </div>
                                 </div>
-                                <div className="text-[10px] font-black text-slate-300 uppercase tracking-tighter">{req.date}</div>
+                                <div className="text-[10px] font-black text-slate-300 uppercase tracking-tighter">{new Date(req.createdAt).toLocaleDateString()}</div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-8">

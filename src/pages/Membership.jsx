@@ -53,9 +53,9 @@ const Membership = () => {
 
   return (
     <div className="max-w-4xl mx-auto pb-12">
-      <div className="bg-primary rounded-[40px] p-12 text-white mb-12 shadow-2xl relative overflow-hidden border border-white/5">
+      <div className="bg-primary rounded-[32px] md:rounded-[40px] p-8 md:p-12 text-white mb-8 md:mb-12 shadow-2xl relative overflow-hidden border border-white/5">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/20 rounded-full blur-2xl"></div>
-        <h1 className="text-4xl font-black mb-4 text-white drop-shadow-sm">IEI Membership Application</h1>
+        <h1 className="text-3xl md:text-4xl font-black mb-4 text-white drop-shadow-sm">IEI Membership Application</h1>
         <p className="text-white font-bold text-lg max-w-xl drop-shadow-sm">
           Join the prestigious network of engineers and unlock exclusive academic and professional resources.
         </p>
@@ -63,7 +63,7 @@ const Membership = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit} className="bg-white p-10 rounded-[32px] shadow-xl border border-slate-100 space-y-8">
+          <form onSubmit={handleSubmit} className="bg-white p-6 md:p-10 rounded-[32px] shadow-xl border border-slate-100 space-y-6 md:space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div className="md:col-span-2">
                  <label className="block text-sm font-bold text-slate-700 mb-3">Full Name (As per records)</label>

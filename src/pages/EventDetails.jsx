@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Calendar, MapPin, Users, Clock, ArrowLeft, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, ArrowLeft, CheckCircle, AlertCircle, Loader2, Star } from 'lucide-react';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 
@@ -12,6 +12,7 @@ const EventDetails = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
+  const [ratingLoading, setRatingLoading] = useState(false);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -40,22 +41,45 @@ const EventDetails = () => {
     fetchEvent();
   }, [id]);
 
-  const handleRegister = async () => {
+  const handleRegisterClick = () => {
     if (!user) {
       toast.error('Please login to register');
       navigate('/login', { state: { from: { pathname: `/events/${id}` } } });
       return;
     }
+    const registrationUrl = event.registrationLink || 'https://share.google/lXNL2fJt8RXl3hODa';
+    window.open(registrationUrl, '_blank');
+  };
 
-    setRegistering(true);
+  const handleRate = async (score) => {
+    if (!user) return toast.error('Please login to rate this event');
+    setRatingLoading(true);
     try {
-      await api.post(`/events/${id}/register`);
-      toast.success('Successfully registered for the event!');
+      const response = await api.post(`/events/${id}/rate`, { score });
+      toast.success(response.data.message);
+      setEvent({ ...event, ratings: response.data.ratings });
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Registration failed');
+      console.error('Rating error:', error);
+      toast.error(error.response?.data?.message || 'Failed to submit rating');
     } finally {
-      setRegistering(false);
+      setRatingLoading(false);
     }
+  };
+
+  const calculateAverageRating = () => {
+    if (!event.ratings || event.ratings.length === 0) return 0;
+    const sum = event.ratings.reduce((acc, curr) => acc + curr.score, 0);
+    return (sum / event.ratings.length).toFixed(1);
+  };
+
+  const getMyRating = () => {
+    if (!user || !event.ratings) return 0;
+    const userId = user._id || user.id;
+    const myRating = event.ratings.find(r => {
+      const rUserId = r.user?._id || r.user; // Handle populated and non-populated
+      return rUserId.toString() === userId.toString();
+    });
+    return myRating ? myRating.score : 0;
   };
 
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary" size={40} /></div>;
@@ -70,11 +94,36 @@ const EventDetails = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-10">
-          <div className="bg-white p-10 rounded-3xl shadow-xl border border-slate-100">
+          <div className="bg-white p-10 rounded-3xl shadow-xl border border-slate-100 overflow-hidden relative">
+            {event.image && (
+              <div className="w-full h-80 -mt-10 -mx-10 mb-8 relative">
+                 <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+                 <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white to-transparent"></div>
+              </div>
+            )}
             <span className="px-4 py-1 bg-primary/10 text-primary rounded-full text-sm font-bold mb-6 inline-block">
               {event.category}
             </span>
-            <h1 className="text-4xl font-extrabold text-primary mb-6 leading-tight">{event.title}</h1>
+            <h1 className="text-4xl font-extrabold text-primary mb-4 leading-tight">{event.title}</h1>
+            
+            <div className="flex items-center space-x-2 mb-8 bg-amber-50 w-fit px-4 py-2 rounded-2xl border border-amber-100">
+               <div className="flex items-center space-x-1">
+                 {[1, 2, 3, 4, 5].map((star) => (
+                   <button 
+                     key={star} 
+                     onClick={() => handleRate(star)}
+                     disabled={ratingLoading}
+                     className={`focus:outline-none hover:scale-110 overflow-hidden transition-all ${ratingLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                   >
+                     <Star 
+                       size={20} 
+                       className={`transition-colors ${star <= (getMyRating() || Math.round(Number(calculateAverageRating()))) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} 
+                     />
+                   </button>
+                 ))}
+               </div>
+               <span className="text-amber-800 font-black text-sm">{calculateAverageRating()} <span className="opacity-50 text-xs uppercase tracking-tighter">({event.ratings?.length || 0} reviews)</span></span>
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
               <div className="flex items-center space-x-3 text-slate-600">
@@ -147,7 +196,7 @@ const EventDetails = () => {
             </div>
 
             <button
-               onClick={handleRegister}
+               onClick={handleRegisterClick}
                disabled={registering}
                className="w-full bg-white text-primary py-4 rounded-xl font-bold hover:bg-slate-50 transition-all shadow-lg flex items-center justify-center space-x-2 disabled:bg-slate-200"
             >
@@ -172,6 +221,7 @@ const EventDetails = () => {
           </div>
         </div>
       </div>
+
     </div>
   );
 };

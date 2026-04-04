@@ -21,14 +21,14 @@ const Header = () => {
             <Link to="/" className="text-slate-600 hover:text-primary transition-colors">Home</Link>
             <Link to="/events" className="text-slate-600 hover:text-primary transition-colors">Events</Link>
             <Link to="/membership" className="text-slate-600 hover:text-primary transition-colors">Membership</Link>
-            {user && <Link to="/discussion" className="text-primary font-bold bg-primary/5 px-3 py-1 rounded-lg">Discussion</Link>}
+
             <Link to="/about" className="text-slate-600 hover:text-primary transition-colors">About</Link>
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
-                {(user.role === 'ADMIN' || user.role === 'COMMITTEE') && (
+                {user.role === 'ADMIN' && (
                   <Link to="/admin" className="text-primary hover:bg-slate-50 p-2 rounded-full transition-all">
                     <LayoutDashboard size={20} />
                   </Link>
@@ -65,7 +65,7 @@ const Header = () => {
             <Link to="/" className="block px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg">Home</Link>
             <Link to="/events" className="block px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg">Events</Link>
             <Link to="/membership" className="block px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg">Membership</Link>
-            {user && <Link to="/discussion" className="block px-4 py-2 text-primary font-bold hover:bg-slate-50 rounded-lg">Discussion Room</Link>}
+
             <Link to="/about" className="block px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg">About</Link>
             {user ? (
               <>

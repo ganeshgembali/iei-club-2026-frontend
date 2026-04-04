@@ -5,6 +5,7 @@ import api from '../services/api';
 
 const Home = () => {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [dbStats, setDbStats] = useState({ activeMembers: 0, totalEvents: 0 });
 
   useEffect(() => {
     const fetchHomeEvents = async () => {
@@ -17,12 +18,23 @@ const Home = () => {
         console.error('Failed to fetch home events');
       }
     };
+
+    const fetchStats = async () => {
+      try {
+        const response = await api.get('/stats');
+        setDbStats(response.data);
+      } catch (error) {
+        console.error('Failed to fetch stats');
+      }
+    };
+
     fetchHomeEvents();
+    fetchStats();
   }, []);
   return (
     <div className="space-y-16 pb-12 animate-in slide-in-from-bottom-8 duration-700">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-white rounded-[40px] p-8 md:p-16 shadow-2xl border border-slate-100 group">
+      <section className="relative overflow-hidden bg-white rounded-[32px] md:rounded-[40px] p-6 sm:p-8 md:p-16 shadow-2xl border border-slate-100 group">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-slate-50 flex items-center justify-center opacity-40 transition-transform duration-1000 group-hover:scale-110">
            <div className="w-64 h-64 border-8 border-primary rounded-full absolute -top-10 -right-10 animate-[spin_20s_linear_infinite]"></div>
            <div className="w-32 h-32 border-4 border-primary-light rounded-full absolute bottom-10 right-20 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
@@ -32,7 +44,7 @@ const Home = () => {
           <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-semibold mb-6 animate-bounce">
             Empowering Future Engineers
           </span>
-          <h1 className="text-5xl md:text-6xl font-extrabold text-primary leading-tight mb-6 transition-all hover:text-primary-dark cursor-default">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-primary leading-tight mb-6 transition-all hover:text-primary-dark cursor-default md:tracking-tight">
             Institution of Engineers (India)
             <span className="block text-primary-light">Student Chapter</span>
           </h1>
@@ -52,18 +64,18 @@ const Home = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Active Members', value: '500+', icon: <Users className="text-primary group-hover:animate-bounce" /> },
-          { label: 'Annual Events', value: '25+', icon: <Calendar className="text-primary group-hover:animate-pulse" /> },
-          { label: 'Collaborations', value: '10+', icon: <Award className="text-primary group-hover:rotate-12 transition-transform" /> },
-          { label: 'Chapters', value: '100+', icon: <Bell className="text-primary group-hover:scale-110 transition-transform" /> },
+          { label: 'Active Members', value: `${dbStats.activeMembers}+`, icon: <Users className="text-primary group-hover:animate-bounce" /> },
+          { label: 'Total Events', value: `${dbStats.totalEvents}+`, icon: <Calendar className="text-primary group-hover:animate-pulse" /> },
+          { label: 'VIT-AP Chapter', value: '1', icon: <Bell className="text-primary group-hover:scale-110 transition-transform" /> },
+          { label: 'Global Recognition', value: '100%', icon: <Award className="text-primary group-hover:rotate-12 transition-transform" /> },
         ].map((stat, i) => (
-          <div key={i} style={{ animationDelay: `${i * 100}ms` }} className="bg-white p-6 rounded-3xl shadow-md hover:shadow-xl border border-slate-100 flex items-center space-x-4 cursor-pointer hover:-translate-y-2 transition-all duration-300 group animate-in zoom-in fill-mode-both">
+          <div key={i} style={{ animationDelay: `${i * 100}ms` }} className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-3xl shadow-md hover:shadow-xl border border-slate-100 flex flex-col md:flex-row items-center md:space-x-4 space-y-2 md:space-y-0 cursor-pointer hover:-translate-y-2 transition-all duration-300 group animate-in zoom-in fill-mode-both text-center md:text-left">
             <div className="bg-primary/5 p-4 rounded-2xl group-hover:bg-primary/10 transition-colors">{stat.icon}</div>
             <div>
-              <div className="text-3xl font-black text-primary group-hover:scale-105 transition-transform origin-left">{stat.value}</div>
-              <div className="text-slate-500 text-sm font-semibold">{stat.label}</div>
+              <div className="text-2xl md:text-3xl font-black text-primary group-hover:scale-105 transition-transform origin-center md:origin-left">{stat.value}</div>
+              <div className="text-slate-500 text-xs md:text-sm font-semibold">{stat.label}</div>
             </div>
           </div>
         ))}
@@ -73,12 +85,12 @@ const Home = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         {/* Events Preview */}
         <div className="lg:col-span-2 space-y-8">
-          <div className="flex justify-between items-end">
+          <div className="flex flex-col md:flex-row md:justify-between items-start md:items-end gap-4">
             <div>
-              <h2 className="text-3xl font-bold text-primary">Upcoming Events</h2>
+              <h2 className="text-3xl font-bold text-primary leading-tight">Upcoming Events</h2>
               <p className="text-slate-500 mt-2">Don't miss out on our upcoming technical sessions and workshops.</p>
             </div>
-            <Link to="/events" className="text-primary font-semibold flex items-center hover:underline decoration-2 underline-offset-4">
+            <Link to="/events" className="text-primary font-semibold flex items-center shrink-0 hover:underline decoration-2 underline-offset-4">
               Explore All <ArrowRight size={16} className="ml-1" />
             </Link>
           </div>
@@ -111,8 +123,10 @@ const Home = () => {
                 </div>
               ))
             ) : (
-               <div className="col-span-2 text-center py-10 bg-slate-50 rounded-2xl border border-slate-100">
-                  <p className="text-slate-500">No upcoming events right now. Check back soon!</p>
+               <div className="col-span-2 text-center py-16 px-6 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-200">
+                  <Calendar className="mx-auto text-slate-300 mb-4" size={48} />
+                  <p className="text-lg font-semibold text-slate-600">No upcoming events right now</p>
+                  <p className="text-sm text-slate-500 mt-2">Check back soon for new technical sessions and workshops.</p>
                </div>
             )}
           </div>

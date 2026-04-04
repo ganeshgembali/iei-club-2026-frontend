@@ -40,7 +40,7 @@ const About = () => {
         <div className="absolute top-0 left-0 w-64 h-64 bg-primary rounded-full -translate-x-32 -translate-y-32 blur-3xl opacity-20"></div>
         
         <div className="relative z-10 text-center mb-16">
-           <h2 className="text-4xl font-black mb-4">Why Join IEI Student Chapter?</h2>
+           <h2 className="text-4xl font-black mb-4 text-white">Why Join IEI Student Chapter?</h2>
            <p className="text-primary-light font-bold uppercase tracking-[0.2em] text-sm">Member Benefits & Opportunities</p>
         </div>
 
@@ -57,7 +57,7 @@ const About = () => {
                 <div className="w-12 h-12 bg-primary flex items-center justify-center rounded-2xl shadow-lg border border-white/10">
                    {feat.icon}
                 </div>
-                <h4 className="text-xl font-bold">{feat.title}</h4>
+                <h4 className="text-xl font-bold text-white">{feat.title}</h4>
                 <p className="text-slate-400 text-sm leading-relaxed">{feat.desc}</p>
              </div>
            ))}
@@ -86,8 +86,8 @@ const About = () => {
             <div className="relative">
                <div className="w-full aspect-square bg-slate-200 rounded-[60px] transform rotate-6 absolute inset-0 -z-10 bg-gradient-to-br from-primary to-primary-light"></div>
                <div className="w-full aspect-square bg-white rounded-[60px] shadow-2xl flex items-center justify-center p-12 border border-slate-100">
-                  <div className="w-full h-full bg-slate-50 rounded-[40px] flex items-center justify-center">
-                     <span className="text-7xl font-black text-slate-200 uppercase">IEI</span>
+                  <div className="w-full h-full bg-white rounded-[40px] flex items-center justify-center p-6 overflow-hidden">
+                     <img src="/logo.png" alt="IEI Logo" className="w-full h-full object-contain mix-blend-multiply hover:scale-105 transition-transform duration-500" />
                   </div>
                </div>
             </div>

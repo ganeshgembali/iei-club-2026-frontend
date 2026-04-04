@@ -38,13 +38,13 @@ const Events = () => {
 
   return (
     <div className="space-y-8 pb-12">
-      <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-100 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 gap-4 text-center md:text-left">
         <div>
           <h1 className="text-4xl font-extrabold text-primary">Explore Events</h1>
           <p className="text-slate-500">Discover workshops, seminars, and competitions.</p>
         </div>
         
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2 justify-center md:justify-end">
           {['ALL', 'UPCOMING', 'PAST'].map((f) => (
             <button
               key={f}
@@ -68,31 +68,38 @@ const Events = () => {
       ) : filteredEvents.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredEvents.map((event) => (
-            <div key={event.id} className="bg-white rounded-3xl overflow-hidden shadow-md border border-slate-100 hover:shadow-2xl transition-all flex flex-col group translate-y-0 hover:-translate-y-2 duration-300">
-              <div className="h-40 bg-slate-100 relative">
-                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-primary shadow-sm">
+            <div key={event._id || event.id} className="bg-white rounded-3xl overflow-hidden shadow-md border border-slate-100 hover:shadow-2xl transition-all flex flex-col group translate-y-0 hover:-translate-y-2 duration-300">
+              <div className="h-48 bg-slate-100 relative overflow-hidden">
+                 {event.image ? (
+                   <img src={event.image} alt={event.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                 ) : (
+                   <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                      <Calendar className="text-primary/20" size={48} />
+                   </div>
+                 )}
+                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-primary shadow-sm z-10 uppercase tracking-tighter">
                    {event.category || 'Event'}
                  </div>
               </div>
-              <div className="p-8 flex-grow flex flex-col">
-                <div className="flex items-center text-slate-400 text-xs mb-3 font-semibold uppercase tracking-wider">
-                  <Calendar size={14} className="mr-1.5" />
+              <div className="p-6 md:p-8 flex-grow flex flex-col">
+                <div className="flex items-center text-slate-400 text-[10px] mb-3 font-black uppercase tracking-widest">
+                  <Calendar size={12} className="mr-1.5 text-primary" />
                   <span>{new Date(event.date).toLocaleDateString()}</span>
                 </div>
-                <h3 className="text-xl font-bold text-primary mb-3 leading-snug group-hover:text-primary-light transition-colors">
+                <h3 className="text-xl font-black text-slate-700 mb-3 leading-snug group-hover:text-primary transition-colors">
                   {event.title}
                 </h3>
-                <div className="flex items-center text-slate-500 text-sm mb-4">
-                  <MapPin size={14} className="mr-1.5" />
+                <div className="flex items-center text-slate-500 text-xs mb-4 font-bold">
+                  <MapPin size={14} className="mr-1.5 text-slate-400" />
                   <span>{event.venue}</span>
                 </div>
-                <p className="text-slate-600 text-sm mb-8 line-clamp-3 leading-relaxed">
+                <p className="text-slate-500 text-sm mb-8 line-clamp-2 leading-relaxed font-medium">
                   {event.description}
                 </p>
                 <div className="mt-auto">
                   <Link 
                     to={`/events/${event._id || event.id}`} 
-                    className="w-full bg-primary text-white py-3 rounded-xl font-bold text-center inline-block hover:bg-primary-light shadow-md hover:shadow-primary/30 transition-all"
+                    className="w-full bg-primary text-white py-4 rounded-2xl font-black text-center inline-block hover:bg-primary-light shadow-xl shadow-primary/10 transition-all uppercase tracking-widest text-xs"
                   >
                     View Details
                   </Link>
