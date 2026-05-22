@@ -4,14 +4,34 @@ import { ArrowRight, Calendar, Bell, Users, Award } from 'lucide-react';
 import api from '../services/api';
 
 const Home = () => {
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [dbStats, setDbStats] = useState({ activeMembers: 0, totalEvents: 0 });
+  const [upcomingEvents, setUpcomingEvents] = useState(() => {
+    try {
+      const cached = localStorage.getItem('iei_events_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        const future = parsed.filter(e => new Date(e.date) >= new Date());
+        return future.slice(0, 2);
+      }
+    } catch (e) {
+      console.error('Failed to read events cache', e);
+    }
+    return [];
+  });
+  const [dbStats, setDbStats] = useState(() => {
+    try {
+      const cachedStats = localStorage.getItem('iei_stats_cache');
+      return cachedStats ? JSON.parse(cachedStats) : { activeMembers: 0, totalEvents: 0 };
+    } catch (e) {
+      return { activeMembers: 0, totalEvents: 0 };
+    }
+  });
 
   useEffect(() => {
     const fetchHomeEvents = async () => {
       try {
         const response = await api.get('/events');
-        // Get up to 2 future events
+        localStorage.setItem('iei_events_cache', JSON.stringify(response.data));
+        
         const future = response.data.filter(e => new Date(e.date) >= new Date());
         setUpcomingEvents(future.slice(0, 2));
       } catch (error) {
@@ -23,6 +43,7 @@ const Home = () => {
       try {
         const response = await api.get('/stats');
         setDbStats(response.data);
+        localStorage.setItem('iei_stats_cache', JSON.stringify(response.data));
       } catch (error) {
         console.error('Failed to fetch stats');
       }
@@ -100,8 +121,13 @@ const Home = () => {
               upcomingEvents.map((event) => (
                 <div key={event._id} className="bg-white rounded-2xl overflow-hidden shadow-md border border-slate-100 hover:shadow-xl transition-shadow group">
                   <div className="h-48 bg-slate-200 relative overflow-hidden">
+                     {event.image ? (
+                        <img src={event.image} alt={event.title} className="w-full h-full object-cover absolute inset-0 group-hover:scale-110 transition-transform duration-700" />
+                     ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 absolute inset-0"></div>
+                     )}
                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                     <div className="absolute bottom-4 left-4 text-white">
+                     <div className="absolute bottom-4 left-4 text-white z-10">
                         <span className="px-2 py-1 bg-primary text-xs rounded mb-2 inline-block">{event.category || 'Event'}</span>
                         <h4 className="font-bold text-lg">{event.title}</h4>
                      </div>

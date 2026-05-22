@@ -40,8 +40,37 @@ const ManageEvents = () => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setCurrentEvent({...currentEvent, image: reader.result});
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1000;
+                    const MAX_HEIGHT = 600;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height = Math.round((height * MAX_WIDTH) / width);
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width = Math.round((width * MAX_HEIGHT) / height);
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Compress to JPEG with 0.6 quality (reduces size by 95-98%)
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                    setCurrentEvent(prev => ({...prev, image: compressedBase64}));
+                };
             };
             reader.readAsDataURL(file);
         }
@@ -153,7 +182,13 @@ const ManageEvents = () => {
                                     <td className="px-8 py-6 text-right">
                                         <div className="flex justify-end space-x-2 transition-opacity">
                                             <button 
-                                              onClick={() => { setCurrentEvent(event); setShowModal(true); }}
+                                              onClick={() => { 
+                                                  setCurrentEvent({
+                                                      ...event,
+                                                      date: event.date ? new Date(event.date).toISOString().split('T')[0] : ''
+                                                  }); 
+                                                  setShowModal(true); 
+                                              }}
                                               className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                                             >
                                                 <Edit size={16} />
@@ -176,8 +211,8 @@ const ManageEvents = () => {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-primary-dark/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500">
-                        <div className="p-8 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                    <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500 max-h-[90vh] flex flex-col">
+                        <div className="p-8 bg-slate-50 border-b border-slate-100 flex justify-between items-center shrink-0">
                             <h3 className="text-2xl font-black text-primary">
                                 {currentEvent._id ? 'Edit Event' : 'Create New Event'}
                             </h3>
@@ -185,7 +220,7 @@ const ManageEvents = () => {
                                 <X size={24} />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-10 space-y-6">
+                        <form onSubmit={handleSubmit} className="p-10 space-y-6 overflow-y-auto flex-grow">
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="md:col-span-2">
                                     <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 block mb-2">Event Title</label>

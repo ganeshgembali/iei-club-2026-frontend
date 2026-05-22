@@ -4,8 +4,15 @@ import { Search, Filter, Calendar, MapPin, ArrowRight } from 'lucide-react';
 import api from '../services/api';
 
 const Events = () => {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState(() => {
+    try {
+      const cached = localStorage.getItem('iei_events_cache');
+      return cached ? JSON.parse(cached) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(events.length === 0);
   const [filter, setFilter] = useState('ALL'); // ALL, UPCOMING, PAST
 
   useEffect(() => {
@@ -13,14 +20,16 @@ const Events = () => {
       try {
         const response = await api.get('/events');
         setEvents(response.data);
+        localStorage.setItem('iei_events_cache', JSON.stringify(response.data));
       } catch (error) {
         console.error('Error fetching events:', error);
-        // Fallback dummy data if API fails
-        setEvents([
-          { id: '1', title: 'National Level Technical Symposium', date: '2026-05-15', venue: 'Main Auditorium', category: 'Symposium', description: 'Annual tech symposium featuring competitions and talks.' },
-          { id: '2', title: 'Workshop on IoT Applications', date: '2026-04-20', venue: 'Lab 4', category: 'Workshop', description: 'Hands-on workshop on building IoT applications.' },
-          { id: '3', title: 'Civil Engineering Career Talk', date: '2026-02-10', venue: 'Seminar Hall', category: 'Webinar', description: 'Expert talk on career prospects in civil engineering.' },
-        ]);
+        if (events.length === 0) {
+          setEvents([
+            { id: '1', title: 'National Level Technical Symposium', date: '2026-05-15', venue: 'Main Auditorium', category: 'Symposium', description: 'Annual tech symposium featuring competitions and talks.' },
+            { id: '2', title: 'Workshop on IoT Applications', date: '2026-04-20', venue: 'Lab 4', category: 'Workshop', description: 'Hands-on workshop on building IoT applications.' },
+            { id: '3', title: 'Civil Engineering Career Talk', date: '2026-02-10', venue: 'Seminar Hall', category: 'Webinar', description: 'Expert talk on career prospects in civil engineering.' },
+          ]);
+        }
       } finally {
         setLoading(false);
       }
